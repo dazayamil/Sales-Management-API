@@ -2,12 +2,17 @@ package com.dazayamil.tiendabel.model.entity;
 
 import com.dazayamil.tiendabel.model.enums.Category;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+
 import java.math.BigDecimal;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Entity
+@Builder
 @Table(name = "product")
-@Data
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +25,6 @@ public class Product {
     @Column(nullable = false)
     private Category category;
 
-    @Column(name = "price", nullable = false)
+    @Column(nullable = false)
     private BigDecimal price;
 }

@@ -2,13 +2,17 @@ package com.dazayamil.tiendabel.model.entity;
 
 import com.dazayamil.tiendabel.model.enums.Role;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Entity
+@Builder
 @Table(name = "user")
-@Data
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +28,6 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    @OneToMany(targetEntity = Sale.class, mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Sale> sales;
 }

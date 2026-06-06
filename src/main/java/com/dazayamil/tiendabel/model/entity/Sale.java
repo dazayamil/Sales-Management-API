@@ -3,15 +3,19 @@ package com.dazayamil.tiendabel.model.entity;
 import com.dazayamil.tiendabel.model.enums.Payment;
 import com.dazayamil.tiendabel.model.enums.Status;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Entity
+@Builder
 @Table(name = "sale")
-@Data
 public class Sale {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,17 +35,11 @@ public class Sale {
     @Column(nullable = false)
     private Status status;
 
-    @ManyToOne(targetEntity = User.class)
+    @ManyToOne()
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(
-            targetEntity = SaleItem.class,
-            mappedBy = "sale",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "sale", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleItem> items;
 
 }
