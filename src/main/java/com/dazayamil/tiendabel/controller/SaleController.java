@@ -45,7 +45,7 @@ public class SaleController {
     @PostMapping
     public ResponseEntity<SaleResponseDTO> createSale(@Valid @RequestBody SaleCreateRequestDTO request){
         SaleResponseDTO created = this.saleService.createSale(request);
-        URI location = URI.create("/v1/sales/" + created.getSaleId());
+        URI location = URI.create("/v1/sales/" + created.saleId());
 
         return ResponseEntity.created(location).body(created);
     }

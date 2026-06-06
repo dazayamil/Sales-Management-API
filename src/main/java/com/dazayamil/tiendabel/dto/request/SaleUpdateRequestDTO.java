@@ -4,16 +4,12 @@ import com.dazayamil.tiendabel.model.enums.Payment;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-
 import java.util.List;
 
-@Data
-public class SaleUpdateRequestDTO {
+public record SaleUpdateRequestDTO (
     @NotNull(message = "paymentMethod is required")
-    private Payment paymentMethod;
-
+    Payment paymentMethod,
     @NotEmpty(message = "items must contain at least one item")
     @Valid
-    private List<SaleItemRequestDTO> items;
-}
+    List<SaleItemRequestDTO> items
+){}

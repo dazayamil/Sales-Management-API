@@ -167,6 +167,7 @@ public class SaleServiceImpl implements SaleService {
         BigDecimal totalRevenue = sales.stream()
                 .map(sale -> sale.getTotalAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         List<PaymentBreakdownDTO> breakdown = buildPaymentBreakdown(sales);
 
         return DailyReportResponseDTO.builder()
