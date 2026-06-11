@@ -6,6 +6,7 @@ import com.dazayamil.tiendabel.dto.request.SaleUpdateRequestDTO;
 import com.dazayamil.tiendabel.dto.response.DailyReportResponseDTO;
 import com.dazayamil.tiendabel.dto.response.PaymentBreakdownDTO;
 import com.dazayamil.tiendabel.dto.response.SaleResponseDTO;
+import com.dazayamil.tiendabel.exception.SaleNotFoundException;
 import com.dazayamil.tiendabel.mapper.SaleMapper;
 import com.dazayamil.tiendabel.model.entity.Product;
 import com.dazayamil.tiendabel.model.entity.Sale;
@@ -47,10 +48,10 @@ public class SaleServiceImpl implements SaleService {
         List<SaleItem> items = new ArrayList<>();
 
         for (SaleItemRequestDTO itemDTO : itemsDTO){
-            Product product = productRepository.findById(itemDTO.getProductoId())
+            Product product = productRepository.findById(itemDTO.productoId())
                     .orElseThrow( () -> new RuntimeException("Product not found"));
 
-            BigDecimal finalPrice = itemDTO.getPriceAtMoment();
+            BigDecimal finalPrice = itemDTO.priceAtMoment();
             if(finalPrice == null){
                 finalPrice = product.getPrice();
             }
@@ -58,8 +59,8 @@ public class SaleServiceImpl implements SaleService {
             SaleItem item = new SaleItem();
             item.setSale(sale);
             item.setProduct(product);
-            item.setQuantity(itemDTO.getQuantity());
-            item.setProductSize(itemDTO.getProductSize());
+            item.setQuantity(itemDTO.quantity());
+            item.setProductSize(itemDTO.productSize());
             item.setPriceAtMoment(finalPrice);
             items.add(item);
         }
@@ -75,20 +76,20 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     public SaleResponseDTO createSale(SaleCreateRequestDTO request) {
-        if(request.getItems() == null || request.getItems().isEmpty()){
+        if(request.items() == null || request.items().isEmpty()){
             throw new RuntimeException("A Sale must hace at least one item");
         }
 
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(request.userId())
                 .orElseThrow( () -> new RuntimeException("user not found"));
 
         Sale sale = new Sale();
         sale.setUser(user);
         sale.setCreatedAt(LocalDateTime.now());
-        sale.setPaymentMethod(request.getPaymentMethod());
+        sale.setPaymentMethod(request.paymentMethod());
         sale.setStatus(Status.COMPLETED);
 
-        List<SaleItem> items = buildSaleItems(sale, request.getItems());
+        List<SaleItem> items = buildSaleItems(sale, request.items());
         BigDecimal total = calculateTotal(items);
 
         sale.setItems(items);
@@ -106,7 +107,7 @@ public class SaleServiceImpl implements SaleService {
     @Override
     public SaleResponseDTO getSaleById(Long id) {
         Sale sale = saleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sale not found"));
+                .orElseThrow(() -> new SaleNotFoundException(id));
 
         return this.saleMapper.toResponseDTO(sale);
     }
@@ -120,10 +121,10 @@ public class SaleServiceImpl implements SaleService {
             throw new RuntimeException("Sale cannot be updated unless it is COMPLETED");
         }
 
-        updateSale.setPaymentMethod(request.getPaymentMethod());
+        updateSale.setPaymentMethod(request.paymentMethod());
         updateSale.getItems().clear();
 
-        List<SaleItem> items = buildSaleItems(updateSale, request.getItems());
+        List<SaleItem> items = buildSaleItems(updateSale, request.items());
         BigDecimal total = calculateTotal(items);
         updateSale.setItems(items);
         updateSale.setTotalAmount(total);
@@ -150,11 +151,11 @@ public class SaleServiceImpl implements SaleService {
                 .map(Sale::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return PaymentBreakdownDTO.builder()
-                .paymentMethod(paymentMethod)
-                .count(salesGroup.size())
-                .total(totalAmount)
-                .build();
+        return new PaymentBreakdownDTO(
+                paymentMethod,
+                salesGroup.size(),
+                totalAmount
+        );
     }
 
     @Override
@@ -165,17 +166,16 @@ public class SaleServiceImpl implements SaleService {
         List<Sale> sales = this.saleRepository.findByCreatedAtBetween(start, end);
 
         BigDecimal totalRevenue = sales.stream()
-                .map(sale -> sale.getTotalAmount())
+                .map(Sale::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         List<PaymentBreakdownDTO> breakdown = buildPaymentBreakdown(sales);
 
-        return DailyReportResponseDTO.builder()
-                .date(date)
-                .totalSales(sales.size())
-                .totalRevenue(totalRevenue)
-                .paymentBreakdown(breakdown)
-                .build();
-
+        return new DailyReportResponseDTO(
+                date,
+                sales.size(),
+                totalRevenue,
+                breakdown
+        );
     }
 }
