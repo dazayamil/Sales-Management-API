@@ -21,4 +21,4 @@
 ## Sale Status
 - **COMPLETED:** la venta fue registrada exitosamente y es válida.
 - **CANCELED:** la venta fue anulada. Queda registrada en el sistema pero no es válida.
-  Solo el rol ADMIN o EMPLOYEE pueden cancelar una venta.e gestiona stock en la versió9n 1.
+  Solo el rol ADMIN o EMPLOYEE pueden cancelar una venta.
