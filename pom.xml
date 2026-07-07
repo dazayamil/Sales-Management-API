@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.dazayamil</groupId>
-	<artifactId>tiendabel</artifactId>
+	<artifactId>sale-management-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>tiendabel</name>
+	<name>sale-management-api</name>
 	<description>Gestión de stock sobre productos de indumentaria</description>
 	<url/>
 	<licenses>

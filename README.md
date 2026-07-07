@@ -99,12 +99,11 @@ antes de llegar al Controller para validar autenticación y autorización.
 
 La documentación completa se encuentra en la carpeta `/docs`:
 
-- Diagrama entidad-relación
-- Diagrama UML
-- Reglas de negocio
-- Diseño de endpoints
-- Historias de usuario
-
+- [Diagrama entidad-relación](docs/ER-sales-management-api.png)
+- [Diagrama UML](docs/sales-management-API-UML.drawio.png)
+- [Reglas de negocio](docs/business-rules.md)
+- [Historias de usuario - endpoints](docs/user-stories.md)
+- [Flujos del sistema](docs/system-flows)
 ---
 
 ## 👨‍💻 Desarrollador

@@ -1,0 +1,180 @@
+package com.dazayamil.salemanagementapi.service.impl;
+
+import com.dazayamil.salemanagementapi.dto.request.SaleCreateRequestDTO;
+import com.dazayamil.salemanagementapi.dto.request.SaleItemRequestDTO;
+import com.dazayamil.salemanagementapi.dto.request.SaleUpdateRequestDTO;
+import com.dazayamil.salemanagementapi.dto.response.DailyReportResponseDTO;
+import com.dazayamil.salemanagementapi.dto.response.PaymentBreakdownDTO;
+import com.dazayamil.salemanagementapi.dto.response.SaleResponseDTO;
+import com.dazayamil.salemanagementapi.exception.SaleNotFoundException;
+import com.dazayamil.salemanagementapi.mapper.SaleMapper;
+import com.dazayamil.salemanagementapi.model.entity.Product;
+import com.dazayamil.salemanagementapi.model.entity.Sale;
+import com.dazayamil.salemanagementapi.model.entity.SaleItem;
+import com.dazayamil.salemanagementapi.model.entity.User;
+import com.dazayamil.salemanagementapi.model.enums.Payment;
+import com.dazayamil.salemanagementapi.model.enums.Status;
+import com.dazayamil.salemanagementapi.repository.ProductRepository;
+import com.dazayamil.salemanagementapi.repository.SaleRepository;
+import com.dazayamil.salemanagementapi.repository.UserRepository;
+import com.dazayamil.salemanagementapi.service.SaleService;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+public class SaleServiceImpl implements SaleService {
+    private final SaleRepository saleRepository;
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final SaleMapper saleMapper;
+
+    public SaleServiceImpl(SaleRepository saleRepository, UserRepository userRepository, ProductRepository productRepository, SaleMapper saleMapper){
+        this.saleRepository = saleRepository;
+        this.userRepository = userRepository;
+        this.productRepository = productRepository;
+        this.saleMapper = saleMapper;
+    }
+
+    private List<SaleItem> buildSaleItems(Sale sale, List<SaleItemRequestDTO> itemsDTO){
+        List<SaleItem> items = new ArrayList<>();
+
+        for (SaleItemRequestDTO itemDTO : itemsDTO){
+            Product product = productRepository.findById(itemDTO.productoId())
+                    .orElseThrow( () -> new RuntimeException("Product not found"));
+
+            BigDecimal finalPrice = itemDTO.priceAtMoment();
+            if(finalPrice == null){
+                finalPrice = product.getPrice();
+            }
+
+            SaleItem item = new SaleItem();
+            item.setSale(sale);
+            item.setProduct(product);
+            item.setQuantity(itemDTO.quantity());
+            item.setProductSize(itemDTO.productSize());
+            item.setPriceAtMoment(finalPrice);
+            items.add(item);
+        }
+        return items;
+    }
+
+    private BigDecimal calculateTotal(List<SaleItem> items){
+        return items.stream()
+                .map(item -> item.getPriceAtMoment().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+
+    @Override
+    public SaleResponseDTO createSale(SaleCreateRequestDTO request) {
+        if(request.items() == null || request.items().isEmpty()){
+            throw new RuntimeException("A Sale must hace at least one item");
+        }
+
+        User user = userRepository.findById(request.userId())
+                .orElseThrow( () -> new RuntimeException("user not found"));
+
+        Sale sale = new Sale();
+        sale.setUser(user);
+        sale.setCreatedAt(LocalDateTime.now());
+        sale.setPaymentMethod(request.paymentMethod());
+        sale.setStatus(Status.COMPLETED);
+
+        List<SaleItem> items = buildSaleItems(sale, request.items());
+        BigDecimal total = calculateTotal(items);
+
+        sale.setItems(items);
+        sale.setTotalAmount(total);
+        Sale savedSale = saleRepository.save(sale);
+        return this.saleMapper.toResponseDTO(savedSale);
+    }
+
+    @Override
+    public List<SaleResponseDTO> getAllSales() {
+        List<Sale> sales = this.saleRepository.findAll();
+        return this.saleMapper.toResponseDTOList(sales);
+    }
+
+    @Override
+    public SaleResponseDTO getSaleById(Long id) {
+        Sale sale = saleRepository.findById(id)
+                .orElseThrow(() -> new SaleNotFoundException(id));
+
+        return this.saleMapper.toResponseDTO(sale);
+    }
+
+    @Override
+    public SaleResponseDTO updateSaleById(Long id, SaleUpdateRequestDTO request) {
+        Sale updateSale = this.saleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sale not found"));
+
+        if(updateSale.getStatus() != Status.COMPLETED){
+            throw new RuntimeException("Sale cannot be updated unless it is COMPLETED");
+        }
+
+        updateSale.setPaymentMethod(request.paymentMethod());
+        updateSale.getItems().clear();
+
+        List<SaleItem> items = buildSaleItems(updateSale, request.items());
+        BigDecimal total = calculateTotal(items);
+        updateSale.setItems(items);
+        updateSale.setTotalAmount(total);
+        Sale savedSale = saleRepository.save(updateSale);
+        return this.saleMapper.toResponseDTO(savedSale);
+    }
+
+    private List<PaymentBreakdownDTO> buildPaymentBreakdown(List<Sale> sales) {
+
+        Map<Payment, List<Sale>> salesByPaymentMethod = sales.stream()
+                .collect(Collectors.groupingBy(sale -> sale.getPaymentMethod()));
+
+        return salesByPaymentMethod.entrySet().stream()
+                .map(entry -> mapToPaymentBreakdown(entry))
+                .collect(Collectors.toList());
+    }
+
+    private PaymentBreakdownDTO mapToPaymentBreakdown(Map.Entry<Payment, List<Sale>> entry) {
+
+        Payment paymentMethod = entry.getKey();
+        List<Sale> salesGroup = entry.getValue();
+
+        BigDecimal totalAmount = salesGroup.stream()
+                .map(Sale::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new PaymentBreakdownDTO(
+                paymentMethod,
+                salesGroup.size(),
+                totalAmount
+        );
+    }
+
+    @Override
+    public DailyReportResponseDTO getDailyReport(LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.atTime(LocalTime.MAX);
+
+        List<Sale> sales = this.saleRepository.findByCreatedAtBetween(start, end);
+
+        BigDecimal totalRevenue = sales.stream()
+                .map(Sale::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<PaymentBreakdownDTO> breakdown = buildPaymentBreakdown(sales);
+
+        return new DailyReportResponseDTO(
+                date,
+                sales.size(),
+                totalRevenue,
+                breakdown
+        );
+    }
+}
