@@ -26,11 +26,11 @@ public class SaleItem {
     @Column(nullable = false)
     private int quantity;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "sale_id", nullable = false)
     private Sale sale;
 
-    @ManyToOne(targetEntity = Product.class, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 }

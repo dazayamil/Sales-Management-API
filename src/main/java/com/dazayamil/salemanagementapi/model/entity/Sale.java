@@ -35,7 +35,7 @@ public class Sale {
     @Column(nullable = false)
     private Status status;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
