@@ -43,6 +43,19 @@ public class SaleServiceImpl implements SaleService {
         this.saleMapper = saleMapper;
     }
 
+    @Override
+    public List<SaleResponseDTO> getAllSales() {
+        List<Sale> sales = this.saleRepository.findAll();
+        return this.saleMapper.toResponseDTOList(sales);
+    }
+
+    @Override
+    public SaleResponseDTO getSaleById(Long id) {
+        Sale sale = saleRepository.findById(id)
+                .orElseThrow(() -> new SaleNotFoundException(id));
+        return this.saleMapper.toResponseDTO(sale);
+    }
+
     private List<SaleItem> buildSaleItems(Sale sale, List<SaleItemRequestDTO> itemsDTO){
         List<SaleItem> items = new ArrayList<>();
 
@@ -72,7 +85,6 @@ public class SaleServiceImpl implements SaleService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-
     @Override
     public SaleResponseDTO createSale(SaleCreateRequestDTO request) {
         if(request.items() == null || request.items().isEmpty()){
@@ -95,20 +107,6 @@ public class SaleServiceImpl implements SaleService {
         sale.setTotalAmount(total);
         Sale savedSale = saleRepository.save(sale);
         return this.saleMapper.toResponseDTO(savedSale);
-    }
-
-    @Override
-    public List<SaleResponseDTO> getAllSales() {
-        List<Sale> sales = this.saleRepository.findAll();
-        return this.saleMapper.toResponseDTOList(sales);
-    }
-
-    @Override
-    public SaleResponseDTO getSaleById(Long id) {
-        Sale sale = saleRepository.findById(id)
-                .orElseThrow(() -> new SaleNotFoundException(id));
-
-        return this.saleMapper.toResponseDTO(sale);
     }
 
     @Override

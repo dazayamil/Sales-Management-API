@@ -9,9 +9,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface SaleService {
+    List<SaleResponseDTO> getAllSales();
     SaleResponseDTO createSale(SaleCreateRequestDTO request);
     SaleResponseDTO getSaleById(Long id);
-    List<SaleResponseDTO> getAllSales();
     SaleResponseDTO updateSaleById(Long id, SaleUpdateRequestDTO request);
     DailyReportResponseDTO getDailyReport(LocalDate date);
 }
