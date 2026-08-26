@@ -17,6 +17,5 @@ public record SaleItemRequestDTO (
     @NotBlank(message = "productSize is required")
     String productSize,
 
-    @DecimalMin(value = "0.01", message = "priceAtMoment must be greater than 0")
     BigDecimal priceAtMoment
 ){}

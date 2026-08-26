@@ -15,6 +15,7 @@
 - Una venta debe estar asociada a un usuario autenticado y registrado en el sistema.
 - La forma de pago es obligatoria (CASH, TRANSFER, CARD).
 - El total de la venta se calcula automáticamente en base a los items y sus precios.
+- El precio de cada item se toma automáticamente del producto. Puede ser modificado manualmente al momento de registrar la venta.
 - Solo se pueden editar ventas en estado COMPLETED.
 - Una venta no puede ser eliminada físicamente del sistema.
 
