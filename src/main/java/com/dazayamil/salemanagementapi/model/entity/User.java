@@ -28,6 +28,9 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
+    private boolean active = true;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Sale> sales;
 }
