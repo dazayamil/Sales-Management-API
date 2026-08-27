@@ -4,6 +4,7 @@ import com.dazayamil.salemanagementapi.dto.request.SaleCreateRequestDTO;
 import com.dazayamil.salemanagementapi.dto.request.SaleUpdateRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.DailyReportResponseDTO;
 import com.dazayamil.salemanagementapi.dto.response.SaleResponseDTO;
+import com.dazayamil.salemanagementapi.service.SaleService;
 import com.dazayamil.salemanagementapi.service.impl.SaleServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,9 +18,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/sales")
 public class SaleController {
-    private final SaleServiceImpl saleService;
+    private final SaleService saleService;
 
-    public SaleController(SaleServiceImpl saleService){
+    public SaleController(SaleService saleService){
         this.saleService = saleService;
     }
 
