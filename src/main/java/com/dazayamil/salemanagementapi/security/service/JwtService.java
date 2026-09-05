@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
 
+//JwtService: Genera y valida tokens JWT
 @Service
 public class JwtService {
     @Value("${jwt.secret}")
@@ -20,20 +21,24 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    //GenerateToken: Construye el token JWT
+    //GenerateToken: Construye el token JWT para el usuario autenticado
+    //Recibe UserDetails(interfaz de SpringBoot) que representa al usuario
     public String generateToken(UserDetails userDetails){
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSigningKey())
+                .signWith(getSigningKey()) //firma con la clave secreta
                 .compact();
     }
 
+    //Extrae el username que está guardado dentro del token
     public String extractUsername(String token){
         return extractClaim(token, Claims::getSubject);
     }
 
+    //Valida que el token sea legítimo y pertenezca al usuario correcto
+    //Verifica 2 cosas: username coincide y token no expiró
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
@@ -47,11 +52,13 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    //Metodo generico para extraer cualquier dato del token
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
+    //Parsea el token completo y devuelve todos sus datos internos (Claims)
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
