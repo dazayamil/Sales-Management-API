@@ -1,7 +1,7 @@
 # Business Rules
 
 ## Products
-- Solo el rol ADMIN puede crear, editar o eliminar productos.
+- Solo el rol ADMIN puede crear, editar o eliminar productos(soft delete).
 - El nombre, categoría y precio son obligatorios.
 - El precio no puede ser 0, negativo o nulo.
 - Los productos no se eliminan físicamente, se dan de baja (soft delete).
