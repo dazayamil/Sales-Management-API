@@ -9,8 +9,8 @@ import com.dazayamil.salemanagementapi.service.ProductService;
 import java.util.List;
 
 public class ProductServiceImpl implements ProductService {
-    private ProductMapper productMapper;
-    private ProductRepository productRepository;
+    private final ProductMapper productMapper;
+    private final ProductRepository productRepository;
 
     public ProductServiceImpl(ProductMapper productMapper, ProductRepository productRepository){
         this.productMapper = productMapper;
