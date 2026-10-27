@@ -55,4 +55,13 @@ public class ProductServiceImpl implements ProductService {
         Product savedProduct = productRepository.save(product);
         return productMapper.teResponseDTO(savedProduct);
     }
+
+    @Override
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        product.setActive(false);
+        productRepository.save(product);
+    }
 }
