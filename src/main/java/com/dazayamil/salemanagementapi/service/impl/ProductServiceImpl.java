@@ -42,4 +42,17 @@ public class ProductServiceImpl implements ProductService {
         Product savedProduct = productRepository.save(product);
         return productMapper.teResponseDTO(savedProduct);
     }
+
+    @Override
+    public ProductResponseDTO updateProducto(Long id, ProductRequestDTO request) {
+        Product product = productRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        product.setName(request.name());
+        product.setCategory(request.category());
+        product.setPrice(request.price());
+
+        Product savedProduct = productRepository.save(product);
+        return productMapper.teResponseDTO(savedProduct);
+    }
 }
