@@ -1,5 +1,6 @@
 package com.dazayamil.salemanagementapi.service.impl;
 
+import com.dazayamil.salemanagementapi.dto.request.ProductRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.ProductResponseDTO;
 import com.dazayamil.salemanagementapi.exception.ProductNotFoundException;
 import com.dazayamil.salemanagementapi.mapper.ProductMapper;
@@ -26,7 +27,19 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDTO getProductById(Long id) {
-        Product product = this.productRepository.findAllByActiveTrue(id).orElseThrow(() -> new ProductNotFoundException(id));
-        return this.productMapper.teResponseDTO(product);
+        Product product = productRepository.findAllByActiveTrue(id).orElseThrow(() -> new ProductNotFoundException(id));
+        return productMapper.teResponseDTO(product);
+    }
+
+    @Override
+    public ProductResponseDTO createProduct(ProductRequestDTO request) {
+        Product product = Product.builder()
+                .name(request.name())
+                .category(request.category())
+                .price(request.price())
+                .build();
+
+        Product savedProduct = productRepository.save(product);
+        return productMapper.teResponseDTO(savedProduct);
     }
 }
