@@ -1,14 +1,13 @@
 package com.dazayamil.salemanagementapi.controller;
 
+import com.dazayamil.salemanagementapi.dto.request.ProductRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.ProductResponseDTO;
 import com.dazayamil.salemanagementapi.service.ProductService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,5 +33,12 @@ public class ProductController {
     public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id){
         ProductResponseDTO product = productService.getProductById(id);
         return ResponseEntity.ok(product);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO dto){
+        ProductResponseDTO product = productService.createProduct(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 }
