@@ -49,4 +49,11 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id){
+        productService.deleteProduct(id);
+        return ResponseEntity.ok("Product desactivated successfully");
+    }
+
 }
