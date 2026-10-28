@@ -44,7 +44,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDTO updateProducto(Long id, ProductRequestDTO request) {
+    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO request) {
         Product product = productRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
 

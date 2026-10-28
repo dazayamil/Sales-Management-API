@@ -41,4 +41,12 @@ public class ProductController {
         ProductResponseDTO product = productService.createProduct(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO dto){
+        ProductResponseDTO product = productService.updateProduct(id, dto);
+        return ResponseEntity.ok(product);
+    }
+
 }
