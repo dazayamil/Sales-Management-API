@@ -7,9 +7,11 @@ import com.dazayamil.salemanagementapi.mapper.ProductMapper;
 import com.dazayamil.salemanagementapi.model.entity.Product;
 import com.dazayamil.salemanagementapi.repository.ProductRepository;
 import com.dazayamil.salemanagementapi.service.ProductService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final ProductRepository productRepository;
