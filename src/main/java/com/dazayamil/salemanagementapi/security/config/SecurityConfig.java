@@ -1,6 +1,7 @@
 package com.dazayamil.salemanagementapi.security.config;
 
 import com.dazayamil.salemanagementapi.security.filter.JwtAuthFilter;
+import com.dazayamil.salemanagementapi.security.handler.CustomAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +26,15 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, @Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          @Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService,
+                          CustomAuthenticationEntryPoint authenticationEntryPoint
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Bean
@@ -41,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
