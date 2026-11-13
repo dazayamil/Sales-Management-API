@@ -30,6 +30,14 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    // 409: el request está bien formado, pero choca con el estado actual del sistema
+    // (ej: crear un usuario con un username que ya existe)
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameAlreadyExists(
+            UsernameAlreadyExistsException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(SaleNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleSaleNotFound(
             SaleNotFoundException ex, HttpServletRequest request) {
