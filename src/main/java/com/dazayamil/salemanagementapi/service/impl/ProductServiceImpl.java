@@ -34,11 +34,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDTO createProduct(ProductRequestDTO request) {
+    public ProductResponseDTO createProduct(ProductRequestDTO dto) {
         Product product = Product.builder()
-                .name(request.name())
-                .category(request.category())
-                .price(request.price())
+                .name(dto.name())
+                .category(dto.category())
+                .price(dto.price())
                 .build();
 
         Product savedProduct = productRepository.save(product);
@@ -46,13 +46,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO request) {
+    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto) {
         Product product = productRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
 
-        product.setName(request.name());
-        product.setCategory(request.category());
-        product.setPrice(request.price());
+        product.setName(dto.name());
+        product.setCategory(dto.category());
+        product.setPrice(dto.price());
 
         Product savedProduct = productRepository.save(product);
         return productMapper.toResponseDTO(savedProduct);
