@@ -29,7 +29,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDTO getProductById(Long id) {
-        Product product = productRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new ProductNotFoundException(id));
+        Product product = productRepository.findByIdAndActiveTrue(  id).orElseThrow(() -> new ProductNotFoundException(id));
         return productMapper.teResponseDTO(product);
     }
 
