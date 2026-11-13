@@ -8,6 +8,6 @@ import java.util.List;
 
 @Mapper(componentModel = "Spring")
 public interface ProductMapper {
-    ProductResponseDTO teResponseDTO(Product product);
+    ProductResponseDTO toResponseDTO(Product product);
     List<ProductResponseDTO> toResponseDTOList(List<Product> products);
 }

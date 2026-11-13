@@ -4,5 +4,5 @@ import com.dazayamil.salemanagementapi.dto.request.LoginRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.LoginResponseDTO;
 
 public interface AuthService {
-    LoginResponseDTO login(LoginRequestDTO request);
+    LoginResponseDTO login(LoginRequestDTO dto);
 }

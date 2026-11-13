@@ -10,8 +10,8 @@ import java.util.List;
 
 public interface SaleService {
     List<SaleResponseDTO> getAllSales();
-    SaleResponseDTO createSale(SaleCreateRequestDTO request);
+    SaleResponseDTO createSale(SaleCreateRequestDTO dto);
     SaleResponseDTO getSaleById(Long id);
-    SaleResponseDTO updateSaleById(Long id, SaleUpdateRequestDTO request);
+    SaleResponseDTO updateSaleById(Long id, SaleUpdateRequestDTO dto);
     DailyReportResponseDTO getDailyReport(LocalDate date);
 }

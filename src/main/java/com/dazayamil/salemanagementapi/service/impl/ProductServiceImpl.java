@@ -30,7 +30,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDTO getProductById(Long id) {
         Product product = productRepository.findByIdAndActiveTrue(  id).orElseThrow(() -> new ProductNotFoundException(id));
-        return productMapper.teResponseDTO(product);
+        return productMapper.toResponseDTO(product);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ProductServiceImpl implements ProductService {
                 .build();
 
         Product savedProduct = productRepository.save(product);
-        return productMapper.teResponseDTO(savedProduct);
+        return productMapper.toResponseDTO(savedProduct);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(request.price());
 
         Product savedProduct = productRepository.save(product);
-        return productMapper.teResponseDTO(savedProduct);
+        return productMapper.toResponseDTO(savedProduct);
     }
 
     @Override
