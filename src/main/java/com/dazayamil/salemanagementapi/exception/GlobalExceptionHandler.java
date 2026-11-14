@@ -38,6 +38,12 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(
+            UserNotFoundException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(SaleNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleSaleNotFound(
             SaleNotFoundException ex, HttpServletRequest request) {

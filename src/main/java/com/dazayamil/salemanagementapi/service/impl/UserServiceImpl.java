@@ -2,6 +2,7 @@ package com.dazayamil.salemanagementapi.service.impl;
 
 import com.dazayamil.salemanagementapi.dto.request.UserRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.UserResponseDTO;
+import com.dazayamil.salemanagementapi.exception.UserNotFoundException;
 import com.dazayamil.salemanagementapi.exception.UsernameAlreadyExistsException;
 import com.dazayamil.salemanagementapi.mapper.UserMapper;
 import com.dazayamil.salemanagementapi.model.entity.User;
@@ -53,7 +54,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO getUserById(Long id) {
-        return null;
+        User user = userRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new UserNotFoundException(id));
+        return userMapper.toResponseDTO(user);
     }
 
     @Override

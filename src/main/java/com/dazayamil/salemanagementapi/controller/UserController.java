@@ -35,4 +35,10 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id){
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
 }
