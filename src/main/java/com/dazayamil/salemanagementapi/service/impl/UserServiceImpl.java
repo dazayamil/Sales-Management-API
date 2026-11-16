@@ -2,12 +2,14 @@ package com.dazayamil.salemanagementapi.service.impl;
 
 import com.dazayamil.salemanagementapi.dto.request.UserRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.UserResponseDTO;
+import com.dazayamil.salemanagementapi.exception.SelfDeactivationException;
 import com.dazayamil.salemanagementapi.exception.UserNotFoundException;
 import com.dazayamil.salemanagementapi.exception.UsernameAlreadyExistsException;
 import com.dazayamil.salemanagementapi.mapper.UserMapper;
 import com.dazayamil.salemanagementapi.model.entity.User;
 import com.dazayamil.salemanagementapi.repository.UserRepository;
 import com.dazayamil.salemanagementapi.service.UserService;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +67,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
+        User user = userRepository.findByIdAndActiveTrue(id)
+                        .orElseThrow(() -> new UserNotFoundException(id));
 
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        if(user.getUsername().equals(currentUsername)){
+            throw new SelfDeactivationException();
+        }
+
+        user.setActive(false);
+        userRepository.save(user);
     }
 }

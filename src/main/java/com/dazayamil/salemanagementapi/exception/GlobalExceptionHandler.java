@@ -61,6 +61,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, message, request);
     }
 
+    // 409: regla de negocio, un usuario no puede darse de baja a sí mismo
+    @ExceptionHandler(SelfDeactivationException.class)
+    public ResponseEntity<ErrorResponse> handleSelfDeactivation(
+            SelfDeactivationException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     // 400: el JSON llegó roto o con un valor inválido (ej: una categoría que no existe en el enum)
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadableBody(
