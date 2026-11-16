@@ -1,6 +1,7 @@
 package com.dazayamil.salemanagementapi.service.impl;
 
 import com.dazayamil.salemanagementapi.dto.request.UserRequestDTO;
+import com.dazayamil.salemanagementapi.dto.request.UserUpdateRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.UserResponseDTO;
 import com.dazayamil.salemanagementapi.exception.SelfDeactivationException;
 import com.dazayamil.salemanagementapi.exception.UserNotFoundException;
@@ -61,8 +62,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
-        return null;
+    public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO dto) {
+        // 1. Buscar al usuario activo, si no existe → 404
+        User user = userRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        // 2. Solo si el username cambió, verificar que no lo tenga otro → 409
+        if (!user.getUsername().equals(dto.username())
+                && userRepository.existsByUsername(dto.username())) {
+            throw new UsernameAlreadyExistsException(dto.username());
+        }
+
+        // 3. Actualizar solo username y role (el password no se toca)
+        user.setUsername(dto.username());
+        user.setRole(dto.role());
+
+        // 4. Guardar y devolver el DTO
+        User saved = userRepository.save(user);
+        return userMapper.toResponseDTO(saved);
     }
 
     @Override

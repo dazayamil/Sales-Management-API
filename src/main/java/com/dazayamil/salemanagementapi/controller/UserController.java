@@ -1,6 +1,7 @@
 package com.dazayamil.salemanagementapi.controller;
 
 import com.dazayamil.salemanagementapi.dto.request.UserRequestDTO;
+import com.dazayamil.salemanagementapi.dto.request.UserUpdateRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.ProductResponseDTO;
 import com.dazayamil.salemanagementapi.dto.response.UserResponseDTO;
 import com.dazayamil.salemanagementapi.service.UserService;
@@ -46,6 +47,13 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable Long id){
         userService.deleteUser(id);
         return ResponseEntity.ok("User deactivated successfully");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> updateUser(
+            @PathVariable Long id, @Valid @RequestBody UserUpdateRequestDTO dto) {
+        return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
 }
