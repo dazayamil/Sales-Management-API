@@ -3,7 +3,7 @@ package com.dazayamil.salemanagementapi.service.impl;
 import com.dazayamil.salemanagementapi.dto.request.UserRequestDTO;
 import com.dazayamil.salemanagementapi.dto.request.UserUpdateRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.UserResponseDTO;
-import com.dazayamil.salemanagementapi.exception.SelfDeactivationException;
+import com.dazayamil.salemanagementapi.exception.SelfModificationException;
 import com.dazayamil.salemanagementapi.exception.UserNotFoundException;
 import com.dazayamil.salemanagementapi.exception.UsernameAlreadyExistsException;
 import com.dazayamil.salemanagementapi.mapper.UserMapper;
@@ -30,12 +30,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO createUser(UserRequestDTO dto) {
-        // 1. Primero lo barato: ¿ya existe el username?
+        // 1. Primero: ¿ya existe el username?
         if (userRepository.existsByUsername(dto.username())) {
             throw new UsernameAlreadyExistsException(dto.username());
         }
 
-        // 2. Después lo caro: hashear (BCrypt es lento a propósito)
+        // 2.hashear (BCrypt es lento a propósito)
         String hashedPassword = passwordEncoder.encode(dto.password());
 
         // 3. Construir con el HASH, nunca con dto.password()
@@ -57,7 +57,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO getUserById(Long id) {
-        User user = userRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new UserNotFoundException(id));
+        User user = userRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
         return userMapper.toResponseDTO(user);
     }
 
@@ -66,17 +67,13 @@ public class UserServiceImpl implements UserService {
         // 1. Buscar al usuario activo, si no existe → 404
         User user = userRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
-
         // 2. Solo si el username cambió, verificar que no lo tenga otro → 409
-        if (!user.getUsername().equals(dto.username())
-                && userRepository.existsByUsername(dto.username())) {
+        if (isCurrentUser(user)) {
             throw new UsernameAlreadyExistsException(dto.username());
         }
-
         // 3. Actualizar solo username y role (el password no se toca)
         user.setUsername(dto.username());
         user.setRole(dto.role());
-
         // 4. Guardar y devolver el DTO
         User saved = userRepository.save(user);
         return userMapper.toResponseDTO(saved);
@@ -86,13 +83,15 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findByIdAndActiveTrue(id)
                         .orElseThrow(() -> new UserNotFoundException(id));
-
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        if(user.getUsername().equals(currentUsername)){
-            throw new SelfDeactivationException();
+        if(isCurrentUser(user)){
+            throw new SelfModificationException();
         }
-
         user.setActive(false);
         userRepository.save(user);
+    }
+
+    private boolean isCurrentUser(User user){
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        return user.getUsername().equals(currentUsername);
     }
 }

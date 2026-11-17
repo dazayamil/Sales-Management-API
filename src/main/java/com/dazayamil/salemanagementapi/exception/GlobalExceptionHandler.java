@@ -62,9 +62,9 @@ public class GlobalExceptionHandler {
     }
 
     // 409: regla de negocio, un usuario no puede darse de baja a sí mismo
-    @ExceptionHandler(SelfDeactivationException.class)
+    @ExceptionHandler(SelfModificationException.class)
     public ResponseEntity<ErrorResponse> handleSelfDeactivation(
-            SelfDeactivationException ex, HttpServletRequest request) {
+            SelfModificationException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
