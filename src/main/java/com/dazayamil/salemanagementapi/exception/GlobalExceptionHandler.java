@@ -9,9 +9,10 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,22 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    // 400: falta un parámetro obligatorio de la URL (ej: ?date)
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParam(
+            MissingServletRequestParameterException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                "Missing required parameter: " + ex.getParameterName(), request);
+    }
+
+    // 400: el parámetro llegó, pero con un valor inválido (ej: ?date=hola, /products/abc)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                "Invalid value for parameter: " + ex.getName(), request);
+    }
+
     // 400: falló alguna validación del DTO (@NotBlank, @NotNull, @DecimalMin...)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
@@ -70,7 +87,7 @@ public class GlobalExceptionHandler {
 
     // 409: regla de negocio, un usuario no puede darse de baja a sí mismo
     @ExceptionHandler(SelfModificationException.class)
-    public ResponseEntity<ErrorResponse> handleSelfDeactivation(
+    public ResponseEntity<ErrorResponse> handleSelfModification(
             SelfModificationException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
