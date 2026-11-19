@@ -20,7 +20,7 @@ import com.dazayamil.salemanagementapi.repository.ProductRepository;
 import com.dazayamil.salemanagementapi.repository.SaleRepository;
 import com.dazayamil.salemanagementapi.repository.UserRepository;
 import com.dazayamil.salemanagementapi.service.SaleService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -49,12 +49,14 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SaleResponseDTO> getAllSales() {
         List<Sale> sales = this.saleRepository.findAll();
         return this.saleMapper.toResponseDTOList(sales);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SaleResponseDTO getSaleById(Long id) {
         Sale sale = saleRepository.findById(id)
                 .orElseThrow(() -> new SaleNotFoundException(id));
@@ -114,23 +116,25 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    @Transactional
     public SaleResponseDTO updateSaleById(Long id, SaleUpdateRequestDTO request) {
-        Sale updateSale = this.saleRepository.findById(id)
+        Sale sale = this.saleRepository.findById(id)
                 .orElseThrow(() -> new SaleNotFoundException(id));
 
-        if(updateSale.getStatus() != Status.COMPLETED){
+        if(sale.getStatus() != Status.COMPLETED){
             throw new SaleNotEditableException();
         }
+        //1. Primero contruir y validar los items nuevos (si falla, nose tocó nada)
+        List<SaleItem> newItems = buildSaleItems(sale, request.items());
 
-        updateSale.setPaymentMethod(request.paymentMethod());
-        updateSale.getItems().clear();
+        //2. Recién ahora modificar la venta
+        sale.setPaymentMethod(request.paymentMethod());
+        sale.getItems().clear(); // hibernate marca los viejos por borrar
+        sale.getItems().addAll(newItems);  // misma lista, contenido nuevo
+        sale.setTotalAmount(calculateTotal(newItems));
 
-        List<SaleItem> items = buildSaleItems(updateSale, request.items());
-        BigDecimal total = calculateTotal(items);
-        updateSale.setItems(items);
-        updateSale.setTotalAmount(total);
-        Sale savedSale = saleRepository.save(updateSale);
-        return this.saleMapper.toResponseDTO(savedSale);
+        Sale savedSale = saleRepository.save(sale);
+        return saleMapper.toResponseDTO(savedSale);
     }
 
     private List<PaymentBreakdownDTO> buildPaymentBreakdown(List<Sale> sales) {
@@ -160,11 +164,12 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DailyReportResponseDTO getDailyReport(LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.atTime(LocalTime.MAX);
 
-        List<Sale> sales = this.saleRepository.findByCreatedAtBetween(start, end);
+        List<Sale> sales = saleRepository.findByCreatedAtBetweenAndStatus(start, end, Status.COMPLETED);
 
         BigDecimal totalRevenue = sales.stream()
                 .map(Sale::getTotalAmount)
