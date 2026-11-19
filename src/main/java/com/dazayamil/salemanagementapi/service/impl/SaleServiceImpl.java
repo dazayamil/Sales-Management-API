@@ -6,6 +6,8 @@ import com.dazayamil.salemanagementapi.dto.request.SaleUpdateRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.DailyReportResponseDTO;
 import com.dazayamil.salemanagementapi.dto.response.PaymentBreakdownDTO;
 import com.dazayamil.salemanagementapi.dto.response.SaleResponseDTO;
+import com.dazayamil.salemanagementapi.exception.ProductNotFoundException;
+import com.dazayamil.salemanagementapi.exception.SaleNotEditableException;
 import com.dazayamil.salemanagementapi.exception.SaleNotFoundException;
 import com.dazayamil.salemanagementapi.mapper.SaleMapper;
 import com.dazayamil.salemanagementapi.model.entity.Product;
@@ -18,6 +20,7 @@ import com.dazayamil.salemanagementapi.repository.ProductRepository;
 import com.dazayamil.salemanagementapi.repository.SaleRepository;
 import com.dazayamil.salemanagementapi.repository.UserRepository;
 import com.dazayamil.salemanagementapi.service.SaleService;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -62,8 +65,9 @@ public class SaleServiceImpl implements SaleService {
         List<SaleItem> items = new ArrayList<>();
 
         for (SaleItemRequestDTO itemDTO : itemsDTO){
-            Product product = productRepository.findById(itemDTO.productoId())
-                    .orElseThrow( () -> new RuntimeException("Product not found"));
+            Product product = productRepository
+                    .findByIdAndActiveTrue(itemDTO.productId())
+                    .orElseThrow( () -> new ProductNotFoundException(itemDTO.productId()));
 
             BigDecimal finalPrice = itemDTO.priceAtMoment();
             if(finalPrice == null){
@@ -88,10 +92,8 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    @Transactional
     public SaleResponseDTO createSale(SaleCreateRequestDTO request) {
-        if(request.items() == null || request.items().isEmpty()){
-            throw new RuntimeException("A Sale must hace at least one item");
-        }
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new UsernameNotFoundException(currentUsername));
@@ -114,10 +116,10 @@ public class SaleServiceImpl implements SaleService {
     @Override
     public SaleResponseDTO updateSaleById(Long id, SaleUpdateRequestDTO request) {
         Sale updateSale = this.saleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sale not found"));
+                .orElseThrow(() -> new SaleNotFoundException(id));
 
         if(updateSale.getStatus() != Status.COMPLETED){
-            throw new RuntimeException("Sale cannot be updated unless it is COMPLETED");
+            throw new SaleNotEditableException();
         }
 
         updateSale.setPaymentMethod(request.paymentMethod());
