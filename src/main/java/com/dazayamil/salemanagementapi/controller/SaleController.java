@@ -53,6 +53,4 @@ public class SaleController {
     public ResponseEntity<SaleResponseDTO> updateSale(@PathVariable Long id, @Valid @RequestBody SaleUpdateRequestDTO request){
         return ResponseEntity.ok(this.saleService.updateSaleById(id, request));
     }
-
-
 }

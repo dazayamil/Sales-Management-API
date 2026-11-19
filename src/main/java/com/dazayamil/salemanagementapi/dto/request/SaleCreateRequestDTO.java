@@ -7,9 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record SaleCreateRequestDTO (
-    @NotNull(message = "userId is required")
-    Long userId,
-
     @NotNull(message = "paymentMethod is required")
     Payment paymentMethod,
 

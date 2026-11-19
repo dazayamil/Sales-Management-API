@@ -61,6 +61,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, message, request);
     }
 
+    // 409: no se puede modificar una venta que no está COMPLETED
+    @ExceptionHandler(SaleNotEditableException.class)
+    public ResponseEntity<ErrorResponse> handleSaleNotEditable(
+            SaleNotEditableException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     // 409: regla de negocio, un usuario no puede darse de baja a sí mismo
     @ExceptionHandler(SelfModificationException.class)
     public ResponseEntity<ErrorResponse> handleSelfDeactivation(

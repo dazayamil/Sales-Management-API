@@ -18,6 +18,8 @@ import com.dazayamil.salemanagementapi.repository.ProductRepository;
 import com.dazayamil.salemanagementapi.repository.SaleRepository;
 import com.dazayamil.salemanagementapi.repository.UserRepository;
 import com.dazayamil.salemanagementapi.service.SaleService;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -90,9 +92,9 @@ public class SaleServiceImpl implements SaleService {
         if(request.items() == null || request.items().isEmpty()){
             throw new RuntimeException("A Sale must hace at least one item");
         }
-
-        User user = userRepository.findById(request.userId())
-                .orElseThrow( () -> new RuntimeException("user not found"));
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException(currentUsername));
 
         Sale sale = new Sale();
         sale.setUser(user);
