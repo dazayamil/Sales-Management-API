@@ -7,8 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record SaleUpdateRequestDTO (
+
     @NotNull(message = "paymentMethod is required")
     Payment paymentMethod,
+
     @NotEmpty(message = "items must contain at least one item")
     @Valid
     List<SaleItemRequestDTO> items
