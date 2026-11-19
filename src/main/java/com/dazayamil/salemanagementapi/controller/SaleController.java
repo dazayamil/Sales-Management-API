@@ -5,7 +5,6 @@ import com.dazayamil.salemanagementapi.dto.request.SaleUpdateRequestDTO;
 import com.dazayamil.salemanagementapi.dto.response.DailyReportResponseDTO;
 import com.dazayamil.salemanagementapi.dto.response.SaleResponseDTO;
 import com.dazayamil.salemanagementapi.service.SaleService;
-import com.dazayamil.salemanagementapi.service.impl.SaleServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;

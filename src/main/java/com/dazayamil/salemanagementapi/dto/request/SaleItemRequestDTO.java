@@ -1,5 +1,6 @@
 package com.dazayamil.salemanagementapi.dto.request;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,5 +17,6 @@ public record SaleItemRequestDTO (
     @NotBlank(message = "productSize is required")
     String productSize,
 
+    @DecimalMin(value = "0.01", message = "priceAtMoment must be greater than 0")
     BigDecimal priceAtMoment
 ){}
